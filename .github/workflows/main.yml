@@ -4,17 +4,39 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  sync:
+  sync-to-hub:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-      - name: Push to HF
-        uses: nateraw/huggingface-sync-action@v0.0.5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          github_repo_id: AMIT-KARAR/QA_RAG_CHAIN_PDF_ASTRADB
-          huggingface_repo_id: Amitkarar/RAG_QA_ASTRADB
-          hf_token: ${{ secrets.HF_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Verify files
+        run: |
+          ls -la
+          git branch
+          git status
+
+      - name: Add Hugging Face remote
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add space https://oauth2:$HF_TOKEN@huggingface.co/spaces/Amitkarar/RAG_QA_ASTRADB
+          git remote -v
+
+      - name: Push to Hugging Face
+        run: |
+          git push --force space HEAD:main --verbose
