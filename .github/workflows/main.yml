@@ -1,2 +1,30 @@
-- name: Verify HF Auth
-  run: git ls-remote https://hf:$HF_TOKEN@huggingface.co/spaces/Amitkarar/RAG_QA_ASTRADB
+name: Sync to Hugging Face hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - name: Verify HF Auth
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git ls-remote https://hf:$HF_TOKEN@huggingface.co/spaces/Amitkarar/RAG_QA_ASTRADB
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hub https://hf:$HF_TOKEN@huggingface.co/spaces/Amitkarar/RAG_QA_ASTRADB
+          git push --force hub HEAD:main
