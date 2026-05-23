@@ -5,10 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
-
 jobs:
   sync-to-hf-space:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -17,13 +18,11 @@ jobs:
       - name: Install HF CLI
         run: pip install -U huggingface_hub
 
-      # ✅ Login using new HF CLI
       - name: HF Login
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: hf auth login --token $HF_TOKEN
+        run: echo $HF_TOKEN | hf auth login --token
 
-      # ✅ Upload entire repo to the Space (NO GIT)
       - name: Upload files to HF Space
         run: |
           hf upload \
