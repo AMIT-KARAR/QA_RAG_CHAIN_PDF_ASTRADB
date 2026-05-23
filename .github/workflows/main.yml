@@ -1,0 +1,33 @@
+name: Sync GitHub Repo to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+
+jobs:
+  sync-to-hf-space:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install HF CLI
+        run: pip install -U huggingface_hub
+
+      # ✅ Login using new HF CLI
+      - name: HF Login
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: hf auth login --token $HF_TOKEN
+
+      # ✅ Upload entire repo to the Space (NO GIT)
+      - name: Upload files to HF Space
+        run: |
+          hf upload \
+            Amitkarar/Amitkarar/RAG_QA_ASTRADB \
+            . \
+            --repo-type space \
+            --commit-message "Sync from GitHub Actions"
